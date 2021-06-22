@@ -1,6 +1,10 @@
-package serverSide.objects;
+package sharedRegions;
 
+import commInfra.*;
+import serverSide.main.*;
+import genclass.GenericIO;
 import interfaces.*;
+import java.rmi.*;
 
 /**
  *    Plane.
@@ -47,7 +51,7 @@ public class Plane {
      * Reference to the general repository.
      */
 
-    private final GeneralReposInterface repos;
+    private final GeneralRepos repos;
 
     /**
      * Plane instantiation.
@@ -55,7 +59,7 @@ public class Plane {
      * @param repos reference to the general repository
      */
 
-    public Plane(GeneralReposInterface repos) {
+    public Plane(GeneralRepos repos) {
         inF = 0;
         nextFlight = false;
         readyToTakeOff = false;
@@ -86,9 +90,9 @@ public class Plane {
     }
 
     /**
-     * Operation prepare for pass boarding
+     * Operation park at transfer gate.
      * <p>
-     * It is called by the hostess while waiting for passengers to arrive at the airport.
+     * It is called by the pilot when he parks the plane at the transfer gate.
      */
 
     public synchronized void parkAtTransferGate() {
@@ -102,7 +106,6 @@ public class Plane {
      * <p>
      * It is called by the pilot to inform the hostess that the plane is ready for boarding.
      */
-
 
     public synchronized void informPlaneReadyForBoarding() {
         nextFlight = true;

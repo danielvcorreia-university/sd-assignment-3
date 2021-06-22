@@ -32,10 +32,9 @@ public class ServerAirLiftGeneralRepos
 
     public static void main(String[] args)
     {
-        int portNumb = -1;                                             // port number for listening to service requests
-        String rmiRegHostName = "todo";                                         // name of the platform where is located the RMI registering service
-        int rmiRegPortNumb = -1;                                       // port number where the registering service is listening to service requests
-
+        int portNumb = 22163;                                          // port number for listening to service requests
+        String rmiRegHostName = "l040101-ws05.ua.pt";                     // name of the platform where is located the RMI registering service
+        int rmiRegPortNumb = 22164;                                       // port number where the registering service is listening to service requests
 
         /* create and install the security manager */
 
@@ -45,7 +44,7 @@ public class ServerAirLiftGeneralRepos
 
         /* instantiate a general repository object */
 
-        GeneralRepos repos = new GeneralRepos ();                      // general repository object
+        GeneralRepos repos = new GeneralRepos ("log");                 // general repository object
         GeneralReposInterface reposStub = null;                        // remote reference to the general repository object
 
         try
@@ -111,9 +110,9 @@ public class ServerAirLiftGeneralRepos
         GenericIO.writelnString ("General Repository is in operation!");
         try
         { while (!end)
-            synchronized (Class.forName ("serverSide.main.GeneralReposMain"))
+            synchronized (Class.forName ("serverSide.main.ServerAirLiftGeneralRepos"))
             { try
-            { (Class.forName ("serverSide.main.GeneralReposMain")).wait ();
+            { (Class.forName ("serverSide.main.ServerAirLiftGeneralRepos")).wait ();
             }
             catch (InterruptedException e)
             { GenericIO.writelnString ("General Repository main thread was interrupted!");
@@ -121,7 +120,7 @@ public class ServerAirLiftGeneralRepos
             }
         }
         catch (ClassNotFoundException e)
-        { GenericIO.writelnString ("The data type GeneralReposMain was not found (blocking)!");
+        { GenericIO.writelnString ("The data type ServerAirLiftGeneralRepos was not found (blocking)!");
             e.printStackTrace ();
             System.exit (1);
         }
@@ -166,12 +165,12 @@ public class ServerAirLiftGeneralRepos
     {
         end = true;
         try
-        { synchronized (Class.forName ("serverSide.main.GeneralReposMain"))
-        { (Class.forName ("serverSide.main.GeneralReposMain")).notify ();
+        { synchronized (Class.forName ("serverSide.main.ServerAirLiftGeneralRepos"))
+        { (Class.forName ("serverSide.main.ServerAirLiftGeneralRepos")).notify ();
         }
         }
         catch (ClassNotFoundException e)
-        { GenericIO.writelnString ("The data type GeneralReposMain was not found (waking up)!");
+        { GenericIO.writelnString ("The data type ServerAirLiftGeneralRepos was not found (waking up)!");
             e.printStackTrace ();
             System.exit (1);
         }

@@ -1,9 +1,10 @@
-package serverSide.sharedRegions;
+package sharedRegions;
 
+import commInfra.*;
 import serverSide.main.*;
-import serverSide.entities.*;
 import genclass.GenericIO;
-import genclass.TextFile;
+import interfaces.*;
+import java.rmi.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -133,7 +134,19 @@ public class GeneralRepos {
     }
 
     /**
-     * Initial status of the General Repository
+     * Set Info of the flight.
+     *
+     * @param nVoo number of the flight since the begin.
+     * @param npassageiros number of passengers a board.
+     */
+
+    public synchronized void setInfoVoo(int nVoo, int npassageiros) {
+        this.ndoVoo = nVoo;
+        informacaoDosVoos[nVoo-1] = nVoo + ":" + npassageiros;
+    }
+
+    /**
+     * Inicial status of the General Repository
      *
      */
 

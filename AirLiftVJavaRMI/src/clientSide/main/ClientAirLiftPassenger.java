@@ -26,8 +26,8 @@ public class ClientAirLiftPassenger
 
     public static void main (String [] args)
     {
-        String rmiRegHostName;                                         // name of the platform where is located the RMI registering service
-        int rmiRegPortNumb = -1;                                       // port number where the registering service is listening to service requests
+        String rmiRegHostName = "l040101-ws05.ua.pt";                  // name of the platform where is located the RMI registering service
+        int rmiRegPortNumb = 22164;                                    // port number where the registering service is listening to service requests
 
 
         /* getting problem runtime parameters */

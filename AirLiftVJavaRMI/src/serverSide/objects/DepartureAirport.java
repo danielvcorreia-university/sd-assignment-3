@@ -1,4 +1,10 @@
-package serverSide.objects;
+package sharedRegions;
+
+import commInfra.*;
+import serverSide.main.*;
+import genclass.GenericIO;
+import interfaces.*;
+import java.rmi.*;
 
 /**
  *    Departure Airport.
@@ -15,7 +21,7 @@ package serverSide.objects;
  *    his documents and waits until she has checked his documents and calls the next passenger.
  */
 
-public class DepartureAirport {
+public class DepartureAirport implements DepartureAirportInterface {
     /**
      * Number of passengers in queue waiting for to show their documents to the hostess.
      */
@@ -32,13 +38,13 @@ public class DepartureAirport {
      * Reference to passenger threads.
      */
 
-    private final Passenger[] passengers;
+    private final Thread [] passengers;
 
     /**
      * Reference to hostess thread.
      */
 
-    private Hostess hostess;
+    private Thread hostess;
 
     /**
      * Waiting queue at the transfer gate.
@@ -68,7 +74,7 @@ public class DepartureAirport {
      * Reference to the general repository.
      */
 
-    private final GeneralRepos repos;
+    private final GeneralReposInterface repos;
 
     /**
      * Departure airport instantiation.
@@ -76,9 +82,9 @@ public class DepartureAirport {
      * @param repos reference to the general repository
      */
 
-    public DepartureAirport(GeneralRepos repos) {
+    public DepartureAirport(GeneralReposInterface repos) {
         hostess = null;
-        passengers = new Passenger[SimulPar.N];
+        passengers = new Thread[SimulPar.N];
         readyForNextPassenger = false;
         for (int i = 0; i < SimulPar.N; i++)
             passengers[i] = null;
@@ -107,8 +113,8 @@ public class DepartureAirport {
      * <p>
      * It is called by the hostess while waiting for passengers to arrive at the airport.
      */
-
-    public synchronized void prepareForPassBoarding() {
+    @Override
+    public synchronized int prepareForPassBoarding () throws RemoteException {
 
         hostess = (Hostess) Thread.currentThread();
 

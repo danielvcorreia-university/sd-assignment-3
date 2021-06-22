@@ -1,4 +1,10 @@
-package serverSide.objects;
+package sharedRegions;
+
+import commInfra.*;
+import serverSide.main.*;
+import genclass.GenericIO;
+import interfaces.*;
+import java.rmi.*;
 
 /**
  *    Destination Airport.
@@ -54,4 +60,3 @@ public class DestinationAirport {
         return lastPassenger;
     }
 }
-
