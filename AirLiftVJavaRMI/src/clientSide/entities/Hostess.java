@@ -198,13 +198,18 @@ public class Hostess extends Thread {
 
     private void waitForNextPassenger()
     {
+        ReturnBoolean ret = null;
+
         try
-        { hostessState = depAirport.waitForNextPassenger (getHostessCount(), getCheckedPassengers(), getPassengerInQueue());
+        { ret = depAirport.waitForNextPassenger (getHostessCount(), getCheckedPassengers(), getPassengerInQueue());
         }
         catch (RemoteException e)
         { GenericIO.writelnString ("Hostess " + hostessId + " remote exception on waitForNextPassenger: " + e.getMessage ());
             System.exit (1);
         }
+        hostessState = ret.getIntStateVal ();
+        setHostessCount(getHostessCount()+1);
+        setPassengerInQueue(ret.getBooleanVal ());
     }
 
     /**
@@ -215,13 +220,17 @@ public class Hostess extends Thread {
 
     private void checkDocuments()
     {
+        ReturnBoolean ret = null;
+
         try
-        { hostessState = depAirport.checkDocuments (getPassengerInQueue());
+        { ret = depAirport.checkDocuments (getPassengerInQueue());
         }
         catch (RemoteException e)
         { GenericIO.writelnString ("Hostess " + hostessId + " remote exception on checkDocuments: " + e.getMessage ());
             System.exit (1);
         }
+        hostessState = ret.getIntStateVal ();
+        setPassengerInQueue(ret.getBooleanVal ());
     }
 
     /**
@@ -239,6 +248,7 @@ public class Hostess extends Thread {
         { GenericIO.writelnString ("Hostess " + hostessId + " remote exception on prepareForPassBoarding: " + e.getMessage ());
             System.exit (1);
         }
+        setHostessCount(0);
     }
 
     /**
@@ -251,12 +261,16 @@ public class Hostess extends Thread {
 
     private void waitForNextFlight (boolean first)
     {
+        ReturnInt ret = null;
+
         try
-        { hostessState = plane.waitForNextFlight (first, getCheckedPassengers());
+        { ret = plane.waitForNextFlight (first, getCheckedPassengers());
         }
         catch (RemoteException e)
         { GenericIO.writelnString ("Hostess " + hostessId + " remote exception on receivePayment: " + e.getMessage ());
             System.exit (1);
         }
+        hostessState = ret.getIntStateVal ();
+        setCheckedPassengers(ret.getIntVal());
     }
 }

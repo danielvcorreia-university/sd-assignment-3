@@ -120,7 +120,7 @@ public class Passenger extends Thread {
     private void notifyPilot()
     {
         try
-        { passengerState = plane.notifyPilot();
+        { plane.notifyPilot();
         }
         catch (RemoteException e)
         { GenericIO.writelnString ("Passenger " + passengerId + " remote exception on notifyPilot: " + e.getMessage ());
@@ -166,7 +166,7 @@ public class Passenger extends Thread {
         { GenericIO.writelnString ("Passenger " + passengerId + " remote exception on getInF: " + e.getMessage ());
             System.exit (1);
         }
-        passengerState = ret.getIntStateVal ();
+
         return ret.getIntVal ();
     }
 
@@ -179,7 +179,7 @@ public class Passenger extends Thread {
     private void waitForEndOfFlight()
     {
         try
-        { passengerState = plane.waitForEndOfFlight();
+        { plane.waitForEndOfFlight();
         }
         catch (RemoteException e)
         { GenericIO.writelnString ("Passenger " + passengerId + " remote exception on waitForEndOfFlight: " + e.getMessage ());
@@ -213,7 +213,7 @@ public class Passenger extends Thread {
     private void showDocuments()
     {
         try
-        { passengerState = depAirport.showDocuments();
+        { depAirport.showDocuments();
         }
         catch (RemoteException e)
         { GenericIO.writelnString ("Passenger " + passengerId + " remote exception on showDocuments: " + e.getMessage ());
@@ -229,13 +229,17 @@ public class Passenger extends Thread {
 
     private void waitInQueue()
     {
+        ReturnBoolean ret = null;
+
         try
-        { passengerState = depAirport.waitInQueue (passengerId, getReadyToShowDocuments());
+        { ret = depAirport.waitInQueue (passengerId, getReadyToShowDocuments());
         }
         catch (RemoteException e)
         { GenericIO.writelnString ("Passenger " + passengerId + " remote exception on waitInQueue: " + e.getMessage ());
             System.exit (1);
         }
+        passengerState = ret.getIntStateVal ();
+        setReadyToShowDocuments(ret.getBooleanVal());
     }
 
     /**

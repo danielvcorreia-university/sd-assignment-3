@@ -17,7 +17,7 @@ import interfaces.*;
  *    his documents and waits until she has checked his documents and calls the next passenger.
  */
 
-public class Plane implements PlaneInterface {
+public class Plane {
 
     /**
      * Reference to number of passengers in the plane.

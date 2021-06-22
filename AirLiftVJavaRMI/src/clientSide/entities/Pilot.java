@@ -139,7 +139,7 @@ public class Pilot extends Thread {
     private void reportFinalReport()
     {
         try
-        { pilotState = plane.reportFinalReport();
+        { plane.reportFinalReport();
         }
         catch (RemoteException e)
         { GenericIO.writelnString ("Pilot " + pilotId + " remote exception on reportFinalReport: " + e.getMessage ());
@@ -155,13 +155,17 @@ public class Pilot extends Thread {
 
     private void announceArrival()
     {
+        ReturnInt ret = null;
+
         try
-        { pilotState = plane.announceArrival (getTransportedPassengers());
+        { ret = plane.announceArrival (getTransportedPassengers());
         }
         catch (RemoteException e)
         { GenericIO.writelnString ("Pilot " + pilotId + " remote exception on announceArrival: " + e.getMessage ());
             System.exit (1);
         }
+        pilotState = ret.getIntStateVal ();
+        setTransportedPassengers(ret.getIntVal ());
     }
 
     /**
