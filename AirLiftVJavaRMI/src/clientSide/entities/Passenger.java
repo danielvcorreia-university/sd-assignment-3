@@ -73,26 +73,6 @@ public class Passenger extends Thread {
     }
 
     /**
-     * Set passenger id.
-     *
-     * @param id passenger id
-     */
-
-    public void setPassengerId(int id) {
-        passengerId = id;
-    }
-
-    /**
-     * Get passenger id.
-     *
-     * @return passenger id
-     */
-
-    public int getPassengerId() {
-        return passengerId;
-    }
-
-    /**
      * Set if passenger is ready to show documents to hostess.
      *
      * @param bool ready to show documents
@@ -113,26 +93,6 @@ public class Passenger extends Thread {
     }
 
     /**
-     * Set passenger state.
-     *
-     * @param state new passenger state
-     */
-
-    public void setPassengerState(int state) {
-        passengerState = state;
-    }
-
-    /**
-     * Get passenger state.
-     *
-     * @return passenger state
-     */
-
-    public int getPassengerState() {
-        return passengerState;
-    }
-
-    /**
      * Life cycle of the passenger.
      */
 
@@ -149,6 +109,133 @@ public class Passenger extends Thread {
         inF = getInF();
         lastPassenger = leaveThePlane(inF);             //see you later aligator
         if (lastPassenger) { notifyPilot(); }
+    }
+
+    /**
+     *  Last Passenger that leaves the plane notifies the pilot that the plane can return to Departure Airport.
+     *
+     *  Remote operation.
+     */
+
+    private void notifyPilot()
+    {
+        try
+        { passengerState = plane.notifyPilot();
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Passenger " + passengerId + " remote exception on notifyPilot: " + e.getMessage ());
+            System.exit (1);
+        }
+    }
+
+    /**
+     *  Passenger leaves the plane at Destination Airport.
+     *
+     *  Remote operation.
+     */
+
+    private boolean leaveThePlane(int inF)
+    {
+        ReturnBoolean ret = null;
+
+        try
+        { ret = destAirport.leaveThePlane (passengerId, inF);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Passenger " + passengerId + " remote exception on leaveThePlane: " + e.getMessage ());
+            System.exit (1);
+        }
+        passengerState = ret.getIntStateVal ();
+        return ret.getBooleanVal ();
+    }
+
+    /**
+     *  Passenger gets information about how much passengers are still in flight.
+     *
+     *  Remote operation.
+     */
+
+    private int getInF()
+    {
+        ReturnInt ret = null;                                // return value
+
+        try
+        { ret = plane.getInF ();
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Passenger " + passengerId + " remote exception on getInF: " + e.getMessage ());
+            System.exit (1);
+        }
+        passengerState = ret.getIntStateVal ();
+        return ret.getIntVal ();
+    }
+
+    /**
+     *  Passenger waits for the end of the flight.
+     *
+     *  Remote operation.
+     */
+
+    private void waitForEndOfFlight()
+    {
+        try
+        { passengerState = plane.waitForEndOfFlight();
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Passenger " + passengerId + " remote exception on waitForEndOfFlight: " + e.getMessage ());
+            System.exit (1);
+        }
+    }
+
+    /**
+     *  Passenger boards the plane.
+     *
+     *  Remote operation.
+     */
+
+    private void boardThePlane()
+    {
+        try
+        { passengerState = depAirport.boardThePlane (passengerId);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Passenger " + passengerId + " remote exception on boardThePlane: " + e.getMessage ());
+            System.exit (1);
+        }
+    }
+
+    /**
+     *  Passenger shows documents to hostess.
+     *
+     *  Remote operation.
+     */
+
+    private void showDocuments()
+    {
+        try
+        { passengerState = depAirport.showDocuments();
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Passenger " + passengerId + " remote exception on showDocuments: " + e.getMessage ());
+            System.exit (1);
+        }
+    }
+
+    /**
+     *  Passenger waits in queue until he is called by the hostess.
+     *
+     *  Remote operation.
+     */
+
+    private void waitInQueue()
+    {
+        try
+        { passengerState = depAirport.waitInQueue (passengerId, getReadyToShowDocuments());
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Passenger " + passengerId + " remote exception on waitInQueue: " + e.getMessage ());
+            System.exit (1);
+        }
     }
 
     /**

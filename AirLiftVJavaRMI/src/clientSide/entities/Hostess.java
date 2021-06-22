@@ -1,6 +1,5 @@
 package clientSide.entities;
 
-import commInfra.*;
 import interfaces.*;
 import java.rmi.*;
 import serverSide.main.SimulPar;
@@ -86,26 +85,6 @@ public class Hostess extends Thread {
     }
 
     /**
-     * Set hostess id.
-     *
-     * @param id hostess id
-     */
-
-    public void setHostessId(int id) {
-        hostessId = id;
-    }
-
-    /**
-     * Get hostess id.
-     *
-     * @return hostess id
-     */
-
-    public int getHostessId() {
-        return hostessId;
-    }
-
-    /**
      * Set hostess count.
      *
      * @param count hostess count
@@ -164,26 +143,6 @@ public class Hostess extends Thread {
     }
 
     /**
-     * Set hostess state.
-     *
-     * @param state new hostess state
-     */
-
-    public void setHostessState(int state) {
-        hostessState = state;
-    }
-
-    /**
-     * Get hostess state.
-     *
-     * @return hostess state
-     */
-
-    public int getHostessState() {
-        return hostessState;
-    }
-
-    /**
      * Life cycle of the hostess.
      */
 
@@ -214,23 +173,89 @@ public class Hostess extends Thread {
         }
     }
 
+    /**
+     *  Hostess informs pilot that the plane is ready to take off.
+     *
+     *  Remote operation.
+     */
 
+    private void informPlaneReadyToTakeOff()
+    {
+        try
+        { hostessState = plane.informPlaneReadyToTakeOff();
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Hostess " + hostessId + " remote exception on informPlaneReadyToTakeOff: " + e.getMessage ());
+            System.exit (1);
+        }
+    }
+
+    /**
+     *  Hostess waits for next passenger.
+     *
+     *  Remote operation.
+     */
+
+    private void waitForNextPassenger()
+    {
+        try
+        { hostessState = depAirport.waitForNextPassenger (getHostessCount(), getCheckedPassengers(), getPassengerInQueue());
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Hostess " + hostessId + " remote exception on waitForNextPassenger: " + e.getMessage ());
+            System.exit (1);
+        }
+    }
+
+    /**
+     *  Hostess checks passenger documents.
+     *
+     *  Remote operation.
+     */
+
+    private void checkDocuments()
+    {
+        try
+        { hostessState = depAirport.checkDocuments (getPassengerInQueue());
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Hostess " + hostessId + " remote exception on checkDocuments: " + e.getMessage ());
+            System.exit (1);
+        }
+    }
+
+    /**
+     *  Hostess prepares for pass boarding.
+     *
+     *  Remote operation.
+     */
+
+    private void prepareForPassBoarding()
+    {
+        try
+        { hostessState = depAirport.prepareForPassBoarding();
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Hostess " + hostessId + " remote exception on prepareForPassBoarding: " + e.getMessage ());
+            System.exit (1);
+        }
+    }
 
     /**
      *  Hostess waits for the next flight.
      *
      *  Remote operation.
      *
-     *     @param customerId identification of a customer
+     *     @param first true if it is the first function call, false otherwise.
      */
 
     private void waitForNextFlight (boolean first)
     {
         try
-        { hostessState = plane.waitForNextFlight(first);
+        { hostessState = plane.waitForNextFlight (first, getCheckedPassengers());
         }
         catch (RemoteException e)
-        { GenericIO.writelnString ("Hostess remote exception on receivePayment: " + e.getMessage ());
+        { GenericIO.writelnString ("Hostess " + hostessId + " remote exception on receivePayment: " + e.getMessage ());
             System.exit (1);
         }
     }

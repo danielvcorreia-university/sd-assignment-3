@@ -70,26 +70,6 @@ public class Pilot extends Thread {
     }
 
     /**
-     * Set pilot id.
-     *
-     * @param id pilot id
-     */
-
-    public void setPilotId(int id) {
-        pilotId = id;
-    }
-
-    /**
-     * Get pilot id.
-     *
-     * @return pilot id
-     */
-
-    public int getPilotId() {
-        return pilotId;
-    }
-
-    /**
      * Set number of passengers which pilot has transported.
      *
      * @param nTransportedPassengers number of passengers checked
@@ -128,26 +108,6 @@ public class Pilot extends Thread {
     }
 
     /**
-     * Set pilot state.
-     *
-     * @param state new pilot state
-     */
-
-    public void setPilotState(int state) {
-        pilotState = state;
-    }
-
-    /**
-     * Get pilot state.
-     *
-     * @return pilot state
-     */
-
-    public int getPilotState() {
-        return pilotState;
-    }
-
-    /**
      * Life cycle of the pilot.
      */
 
@@ -167,6 +127,91 @@ public class Pilot extends Thread {
                 reportFinalReport();
                 endOp = true;
             }
+        }
+    }
+
+    /**
+     *  Pilot reports the final information to repository.
+     *
+     *  Remote operation.
+     */
+
+    private void reportFinalReport()
+    {
+        try
+        { pilotState = plane.reportFinalReport();
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Pilot " + pilotId + " remote exception on reportFinalReport: " + e.getMessage ());
+            System.exit (1);
+        }
+    }
+
+    /**
+     *  Pilot announces arrival.
+     *
+     *  Remote operation.
+     */
+
+    private void announceArrival()
+    {
+        try
+        { pilotState = plane.announceArrival (getTransportedPassengers());
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Pilot " + pilotId + " remote exception on announceArrival: " + e.getMessage ());
+            System.exit (1);
+        }
+    }
+
+    /**
+     *  Pilot waits for all passengers to board.
+     *
+     *  Remote operation.
+     */
+
+    private void waitForAllInBoarding()
+    {
+        try
+        { pilotState = plane.waitForAllInBoarding();
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Pilot " + pilotId + " remote exception on waitForAllInBoarding: " + e.getMessage ());
+            System.exit (1);
+        }
+    }
+
+    /**
+     *  Pilot informs hostess that the plane is ready for boarding.
+     *
+     *  Remote operation.
+     */
+
+    private void informPlaneReadyForBoarding()
+    {
+        try
+        { pilotState = plane.informPlaneReadyForBoarding();
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Pilot " + pilotId + " remote exception on informPlaneReadyForBoarding: " + e.getMessage ());
+            System.exit (1);
+        }
+    }
+
+    /**
+     *  Pilot parks the plane at transfer gate.
+     *
+     *  Remote operation.
+     */
+
+    private void parkAtTransferGate()
+    {
+        try
+        { pilotState = plane.parkAtTransferGate();
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Pilot " + pilotId + " remote exception on parkAtTransferGate: " + e.getMessage ());
+            System.exit (1);
         }
     }
 
