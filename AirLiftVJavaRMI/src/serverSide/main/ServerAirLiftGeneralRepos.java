@@ -14,7 +14,7 @@ import genclass.GenericIO;
  *    Communication is based on Java RMI.
  */
 
-public class ServerSleepingBarbersGeneralRepos
+public class ServerAirLiftGeneralRepos
 {
     /**
      *  Flag signaling the end of operations.
