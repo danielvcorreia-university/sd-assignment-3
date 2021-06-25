@@ -1,5 +1,6 @@
-package sharedRegions;
+package serverSide.objects;
 
+import clientSide.entities.PassengerStates;
 import commInfra.*;
 import serverSide.main.*;
 import genclass.GenericIO;
@@ -15,7 +16,7 @@ import java.rmi.*;
  *    and one to increment by one the number of passenger in destination airport.
  */
 
-public class DestinationAirport {
+public class DestinationAirport implements DestinationAirportInterface{
     /**
      * For each flight, the number of passengers that left the plane.
      */
@@ -23,10 +24,16 @@ public class DestinationAirport {
     private int PTAL;
 
     /**
+     *   Number of entity groups requesting the shutdown.
+     */
+
+    private int nEntities;
+
+    /**
      * Reference to the general repository.
      */
 
-    private final GeneralRepos repos;
+    private final GeneralReposInterface repos;
 
     /**
      * Destination airport instantiation.
@@ -34,8 +41,9 @@ public class DestinationAirport {
      * @param repos reference to the general repository
      */
 
-    public DestinationAirport(GeneralRepos repos) {
+    public DestinationAirport(GeneralReposInterface repos) {
         PTAL = 0;
+        nEntities = 0;
         this.repos = repos;
     }
 
@@ -44,19 +52,64 @@ public class DestinationAirport {
      * <p>
      * It is called by the passengers when they leave the plane.
      *
-     * @param inF Number of passengers that flew in this flight.
-     * @return Return True if this is the last passenger to leave the plane. Returns false otherwise.
+     *     @param passengerId identification of the passenger
+     *     @param inF Number of passengers that flew in this flight.
+     *     @return true if this is the last passenger to leave the plane,
+     *     false otherwise
+     *     and Passenger state
      */
 
-    public synchronized boolean leaveThePlane(int inF) {
+    public synchronized ReturnBoolean leaveThePlane(int passengerId, int inF) throws RemoteException{
         boolean lastPassenger = false;
         PTAL += 1;
 
-        ((Passenger) Thread.currentThread()).setPassengerState(PassengerStates.AT_DESTINATION);
-        repos.setPassengerState(((Passenger) Thread.currentThread()).getPassengerId(), ((Passenger) Thread.currentThread()).getPassengerState());
+        try{
+            repos.setPassengerState(passengerId, PassengerStates.AT_DESTINATION);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Passenger remote exception on leaveThePlane - : setPassengerState" + e.getMessage ());
+            System.exit (1);
+        }
 
         if (PTAL == inF) { PTAL = 0; lastPassenger = true; }
 
-        return lastPassenger;
+        return new ReturnBoolean(lastPassenger, PassengerStates.AT_DESTINATION);
+    }
+
+    /**
+     *  Operation end of work.
+     *
+     *   End operation.
+     *
+     *      @throws RemoteException if either the invocation of the remote method, or the communication with the registry
+     *                              service fails
+     */
+
+    @Override
+    public synchronized void endOperation () throws RemoteException
+    {
+        while (nEntities == 0)
+            try
+            { wait ();
+            }
+            catch (InterruptedException e) {}
+    }
+
+    /**
+     *   Operation server shutdown.
+     *
+     *   Shutdown operation.
+     *
+     *      @throws RemoteException if either the invocation of the remote method, or the communication with the registry
+     *                              service fails
+     */
+
+    @Override
+    public synchronized void shutdown () throws RemoteException
+    {
+        nEntities += 1;
+        if (nEntities >= SimulPar.E)
+            ServerAirLiftDestinationAirport.shutdown ();
+        notifyAll ();
     }
 }

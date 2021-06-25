@@ -157,7 +157,7 @@ public class Passenger extends Thread {
 
     private int getInF()
     {
-        ReturnInt ret = null;                                // return value
+        int ret=-1;                                // return value
 
         try
         { ret = plane.getInF ();
@@ -167,7 +167,7 @@ public class Passenger extends Thread {
             System.exit (1);
         }
 
-        return ret.getIntVal ();
+        return ret;
     }
 
     /**
@@ -229,17 +229,14 @@ public class Passenger extends Thread {
 
     private void waitInQueue()
     {
-        ReturnBoolean ret = null;
-
         try
-        { ret = depAirport.waitInQueue (passengerId, getReadyToShowDocuments());
+        { passengerState = depAirport.waitInQueue (passengerId);
         }
         catch (RemoteException e)
         { GenericIO.writelnString ("Passenger " + passengerId + " remote exception on waitInQueue: " + e.getMessage ());
             System.exit (1);
         }
-        passengerState = ret.getIntStateVal ();
-        setReadyToShowDocuments(ret.getBooleanVal());
+        setReadyToShowDocuments(false);
     }
 
     /**

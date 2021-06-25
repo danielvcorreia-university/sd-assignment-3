@@ -1,9 +1,13 @@
-package sharedRegions;
+package serverSide.objects;
 
+import clientSide.entities.HostessStates;
+import clientSide.entities.PilotStates;
 import commInfra.*;
 import serverSide.main.*;
 import genclass.GenericIO;
 import interfaces.*;
+
+import javax.print.attribute.standard.RequestingUserName;
 import java.rmi.*;
 
 /**
@@ -21,7 +25,7 @@ import java.rmi.*;
  *    his documents and waits until she has checked his documents and calls the next passenger.
  */
 
-public class Plane {
+public class Plane implements PlaneInterface{
 
     /**
      * Reference to number of passengers in the plane.
@@ -48,10 +52,16 @@ public class Plane {
     private boolean startDeboarding;
 
     /**
+     *   Number of entity groups requesting the shutdown.
+     */
+
+    private int nEntities;
+
+    /**
      * Reference to the general repository.
      */
 
-    private final GeneralRepos repos;
+    private final GeneralReposInterface repos;
 
     /**
      * Plane instantiation.
@@ -59,8 +69,9 @@ public class Plane {
      * @param repos reference to the general repository
      */
 
-    public Plane(GeneralRepos repos) {
+    public Plane(GeneralReposInterface repos) {
         inF = 0;
+        nEntities = 0;
         nextFlight = false;
         readyToTakeOff = false;
         startDeboarding = false;
@@ -75,8 +86,7 @@ public class Plane {
      * @return Number of passengers currently in flight
      */
 
-    public synchronized int getInF() {
-        return inF;
+    public synchronized int getInF() throws RemoteException { return inF;
     }
 
     /**
@@ -85,50 +95,74 @@ public class Plane {
      * It is called by the pilot after he parks the plane at the transfer gate and there are no more passengers to transport
      */
 
-    public synchronized void reportFinalReport() {
-        repos.reportFinalInfo();
+    public synchronized void reportFinalReport() throws RemoteException { repos.reportFinalInfo();
     }
 
     /**
      * Operation park at transfer gate.
      * <p>
      * It is called by the pilot when he parks the plane at the transfer gate.
+     *     @return Pilot state
      */
 
-    public synchronized void parkAtTransferGate() {
+    public synchronized int parkAtTransferGate() throws RemoteException {
 
-        ((Pilot) Thread.currentThread()).setPilotState(PilotStates.AT_TRANSFER_GATE);
-        repos.setPilotState(((Pilot) Thread.currentThread()).getPilotState());
+        try{
+            repos.setPilotState(PilotStates.AT_TRANSFER_GATE);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Pilot remote exception on parkAtTransferGate - : setHostessState" + e.getMessage ());
+            System.exit (1);
+        }
+
+        return PilotStates.AT_TRANSFER_GATE;
     }
 
     /**
      * Operation inform plane ready for boarding
      * <p>
      * It is called by the pilot to inform the hostess that the plane is ready for boarding.
+     *     @return Pilot state
      */
 
-    public synchronized void informPlaneReadyForBoarding() {
+    public synchronized int informPlaneReadyForBoarding() throws RemoteException {
         nextFlight = true;
-        ((Pilot) Thread.currentThread()).setPilotState(PilotStates.READY_FOR_BOARDING);
-        repos.setPilotState(((Pilot) Thread.currentThread()).getPilotState());
+
+        try{
+            repos.setPilotState(PilotStates.READY_FOR_BOARDING);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Pilot remote exception on informPlaneReadyForBoarding - : setHostessState" + e.getMessage ());
+            System.exit (1);
+        }
+
         notifyAll();
+
+        return PilotStates.READY_FOR_BOARDING;
     }
 
     /**
      * Operation wait for next flight
      * <p>
      * It is called by the hostess while waiting for plane to be ready for boarding.
+     *
+     *     @param first true for the the first flight, false otherwise
+     *     @param CheckedPassengers number of passengers that the hostess has previously checked
+     *     @return total number of passengers that have taken the flight
+     *     and Hostess state
      */
 
-    public synchronized void waitForNextFlight(boolean first) {
-
-        ((Hostess) Thread.currentThread()).setHostessState(HostessStates.WAIT_FOR_FLIGHT);
-        if(!first)
-            repos.setHostessState(((Hostess) Thread.currentThread()).getHostessId(), ((Hostess) Thread.currentThread()).getHostessState());
-
-        ((Hostess) Thread.currentThread()).setCheckedPassengers(((Hostess) Thread.currentThread()).getCheckedPassengers() + inF);
-
-        if (!(((Hostess) Thread.currentThread()).getCheckedPassengers() == SimulPar.N)) {
+    public synchronized ReturnInt waitForNextFlight(boolean first, int CheckedPassengers) throws RemoteException {
+        if(!first) {
+            try{
+                repos.setHostessState(0, HostessStates.WAIT_FOR_FLIGHT);
+            }
+            catch (RemoteException e)
+            { GenericIO.writelnString ("Hostess remote exception on waitForNextFlight - : setHostessState" + e.getMessage ());
+                System.exit (1);
+            }
+        }
+        if (!(CheckedPassengers + inF == SimulPar.N)) {
             while(!nextFlight)
             {
                 try {
@@ -141,6 +175,7 @@ public class Plane {
         }
         nextFlight = false;
 
+        return new ReturnInt(CheckedPassengers+inF, HostessStates.WAIT_FOR_FLIGHT);
     }
 
     /**
@@ -148,11 +183,19 @@ public class Plane {
      * <p>
      * It is called by the pilot after he announced the hostess
      * that the plane is ready for boarding .
+     *     @return Pilot state
      */
 
-    public synchronized void waitForAllInBoarding() {
-        ((Pilot) Thread.currentThread()).setPilotState(PilotStates.WAITING_FOR_BOARDING);
-        repos.setPilotState(((Pilot) Thread.currentThread()).getPilotState());
+    public synchronized int waitForAllInBoarding() throws RemoteException {
+
+        try{
+            repos.setPilotState(PilotStates.WAITING_FOR_BOARDING);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Pilot remote exception on waitForAllInBoarding - : setHostessState" + e.getMessage ());
+            System.exit (1);
+        }
+
         while (!readyToTakeOff) {
             try {
                 wait();
@@ -162,22 +205,39 @@ public class Plane {
             }
         }
         readyToTakeOff = false;
-        ((Pilot) Thread.currentThread()).setPilotState(PilotStates.FLYING_FORWARD);
-        repos.setPilotState(((Pilot) Thread.currentThread()).getPilotState());
+
+        try{
+            repos.setPilotState(PilotStates.FLYING_FORWARD);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Pilot remote exception on announceArrival - : setHostessState" + e.getMessage ());
+            System.exit (1);
+        }
+
+        return PilotStates.FLYING_FORWARD;
     }
 
     /**
      * Operation inform the pilot that the plane is ready to departure.
      * <p>
      * It is called by the hostess when she ended the check in of the passengers.
+     *     @return Hostess state
      */
 
-    public synchronized void informPlaneReadyToTakeOff() {
+    public synchronized int informPlaneReadyToTakeOff() throws RemoteException {
 
         readyToTakeOff = true;
-        ((Hostess) Thread.currentThread()).setHostessState(HostessStates.READY_TO_FLY);
-        repos.setHostessState(((Hostess) Thread.currentThread()).getHostessId(), ((Hostess) Thread.currentThread()).getHostessState());
+
+        try{
+            repos.setHostessState(0, HostessStates.READY_TO_FLY);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Hostess remote exception on informPlaneReadyToTakeOff - : setHostessState" + e.getMessage ());
+            System.exit (1);
+        }
         notifyAll();
+
+        return HostessStates.READY_TO_FLY;
     }
 
     /**
@@ -204,13 +264,21 @@ public class Plane {
      * Operation announce that the plane has arrived at the destination airport.
      * <p>
      * It is called by the pilot when the plane has arrived at the destination airport.
+     *
+     *     @param TransportedPassengers number of passengers that have previously taken the flight
+     *     @return total number of passengers that have taken the flight
+     *     and Pilot state
      */
 
-    public synchronized void announceArrival() {
-        ((Pilot) Thread.currentThread()).setPilotState(PilotStates.DEBOARDING);
-        repos.setPilotState(((Pilot) Thread.currentThread()).getPilotState());
+    public synchronized ReturnInt announceArrival(int TransportedPassengers) throws RemoteException {
 
-        ((Pilot) Thread.currentThread()).setTransportedPassengers(((Pilot) Thread.currentThread()).getTransportedPassengers() + inF);
+        try{
+            repos.setPilotState(PilotStates.DEBOARDING);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Pilot remote exception on announceArrival - : setHostessState" + e.getMessage ());
+            System.exit (1);
+        }
 
         startDeboarding = true;
 
@@ -226,8 +294,16 @@ public class Plane {
         }
 
         startDeboarding = false;
-        ((Pilot) Thread.currentThread()).setPilotState(PilotStates.FLYING_BACK);
-        repos.setPilotState(((Pilot) Thread.currentThread()).getPilotState());
+
+        try{
+            repos.setPilotState(PilotStates.FLYING_BACK);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Pilot remote exception on announceArrival - : setHostessState" + e.getMessage ());
+            System.exit (1);
+        }
+
+        return new ReturnInt(TransportedPassengers+inF, PilotStates.FLYING_BACK);
     }
 
     /**
@@ -236,9 +312,45 @@ public class Plane {
      * It is called by the last passenger when he is leaving the plane to awake the pilot who is waiting.
      */
 
-    public synchronized void notifyPilot() {
+    public synchronized void notifyPilot() throws RemoteException {
         inF = 0;
 
         notifyAll();
+    }
+
+
+    /**
+     *  Operation end of work.
+     *
+     *   End operation.
+     *
+     *      @throws RemoteException if either the invocation of the remote method, or the communication with the registry
+     *                              service fails
+     */
+
+    @Override
+    public synchronized void endOperation () throws RemoteException {
+        while (nEntities == 0)
+            try
+            { wait ();
+            }
+            catch (InterruptedException e) {}
+    }
+
+    /**
+     *   Operation server shutdown.
+     *
+     *   Shutdown operation.
+     *
+     *      @throws RemoteException if either the invocation of the remote method, or the communication with the registry
+     *                              service fails
+     */
+
+    @Override
+    public synchronized void shutdown () throws RemoteException {
+        nEntities += 1;
+        if (nEntities >= SimulPar.E)
+            ServerAirLiftPlane.shutdown ();
+        notifyAll ();
     }
 }

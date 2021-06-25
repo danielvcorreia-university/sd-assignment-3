@@ -43,24 +43,6 @@ public interface GeneralReposInterface extends Remote
     public void setPilotState (int state) throws RemoteException;
 
     /**
-     *  Initial status of the General Repository
-     *
-     *     @throws RemoteException if either the invocation of the remote method, or the communication with the registry
-     *                             service fails
-     */
-
-    public void reportInitialStatus () throws RemoteException;
-
-    /**
-     *  Report the status of the General Repository
-     *
-     *     @throws RemoteException if either the invocation of the remote method, or the communication with the registry
-     *                             service fails
-     */
-
-    public void reportStatus () throws RemoteException;
-
-    /**
      *  Report the final report of the General Repository when the pilot ended all the flights
      *
      *     @throws RemoteException if either the invocation of the remote method, or the communication with the registry
@@ -68,17 +50,6 @@ public interface GeneralReposInterface extends Remote
      */
 
     public void reportFinalInfo () throws RemoteException;
-
-    /**
-     *  Operation end of work.
-     *
-     *   New operation.
-     *
-     *      @throws RemoteException if either the invocation of the remote method, or the communication with the registry
-     *                              service fails
-     */
-
-    public void endOperation () throws RemoteException;
 
     /**
      *   Operation server shutdown.

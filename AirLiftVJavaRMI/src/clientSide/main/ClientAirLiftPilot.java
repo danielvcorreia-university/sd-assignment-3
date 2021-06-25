@@ -30,25 +30,6 @@ public class ClientAirLiftPilot
         int rmiRegPortNumb = 22164;                                    // port number where the registering service is listening to service requests
 
 
-        /* getting problem runtime parameters */
-
-        if (args.length != 2)
-        { GenericIO.writelnString ("Wrong number of parameters!");
-            System.exit (1);
-        }
-        rmiRegHostName = args[0];
-        try
-        { rmiRegPortNumb = Integer.parseInt (args[1]);
-        }
-        catch (NumberFormatException e)
-        { GenericIO.writelnString ("args[1] is not a number!");
-            System.exit (1);
-        }
-        if ((rmiRegPortNumb < 4000) || (rmiRegPortNumb >= 65536))
-        { GenericIO.writelnString ("args[1] is not a valid port number!");
-            System.exit (1);
-        }
-
         /* problem initialization */
 
         Pilot pilot;                                                   // reference to the pilot thread

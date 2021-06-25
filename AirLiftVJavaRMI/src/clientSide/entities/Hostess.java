@@ -201,7 +201,7 @@ public class Hostess extends Thread {
         ReturnBoolean ret = null;
 
         try
-        { ret = depAirport.waitForNextPassenger (getHostessCount(), getCheckedPassengers(), getPassengerInQueue());
+        { ret = depAirport.waitForNextPassenger (getHostessCount(), getCheckedPassengers());
         }
         catch (RemoteException e)
         { GenericIO.writelnString ("Hostess " + hostessId + " remote exception on waitForNextPassenger: " + e.getMessage ());
@@ -223,7 +223,7 @@ public class Hostess extends Thread {
         ReturnBoolean ret = null;
 
         try
-        { ret = depAirport.checkDocuments (getPassengerInQueue());
+        { ret = depAirport.checkDocuments();
         }
         catch (RemoteException e)
         { GenericIO.writelnString ("Hostess " + hostessId + " remote exception on checkDocuments: " + e.getMessage ());

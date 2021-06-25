@@ -1,5 +1,6 @@
-package sharedRegions;
+package serverSide.objects;
 
+import clientSide.entities.*;
 import commInfra.*;
 import serverSide.main.*;
 import genclass.GenericIO;
@@ -35,16 +36,10 @@ public class DepartureAirport implements DepartureAirportInterface {
     private int inP;
 
     /**
-     * Reference to passenger threads.
+     * True for the passengers that have reached their turn to check in.
      */
 
-    private final Thread [] passengers;
-
-    /**
-     * Reference to hostess thread.
-     */
-
-    private Thread hostess;
+    private final boolean [] passengers;
 
     /**
      * Waiting queue at the transfer gate.
@@ -71,8 +66,15 @@ public class DepartureAirport implements DepartureAirportInterface {
     private boolean canBoardThePlane;
 
     /**
+     *   Number of entity groups requesting the shutdown.
+     */
+
+    private int nEntities;
+
+    /**
      * Reference to the general repository.
      */
+
 
     private final GeneralReposInterface repos;
 
@@ -83,11 +85,10 @@ public class DepartureAirport implements DepartureAirportInterface {
      */
 
     public DepartureAirport(GeneralReposInterface repos) {
-        hostess = null;
-        passengers = new Thread[SimulPar.N];
+        passengers = new boolean[SimulPar.N];
         readyForNextPassenger = false;
         for (int i = 0; i < SimulPar.N; i++)
-            passengers[i] = null;
+            passengers[i] = false;
         try {
             boardingQueue = new MemFIFO<>(new Integer[SimulPar.N]);
         } catch (MemException e) {
@@ -95,6 +96,7 @@ public class DepartureAirport implements DepartureAirportInterface {
             boardingQueue = null;
             System.exit(1);
         }
+        nEntities = 0;
         this.repos = repos;
     }
 
@@ -104,8 +106,7 @@ public class DepartureAirport implements DepartureAirportInterface {
      * It is called to check if the passenger queue is currently empty
      */
 
-    public boolean queueEmpty() {
-        return inQ == 0;
+    public boolean queueEmpty() throws RemoteException { return inQ == 0;
     }
 
     /**
@@ -116,11 +117,14 @@ public class DepartureAirport implements DepartureAirportInterface {
     @Override
     public synchronized int prepareForPassBoarding () throws RemoteException {
 
-        hostess = (Hostess) Thread.currentThread();
+        try{
+            repos.setHostessState(0, HostessStates.WAIT_FOR_PASSENGER);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Hostess remote exception on prepareForPassBoarding - : setHostessState" + e.getMessage ());
+            System.exit (1);
+        }
 
-        ((Hostess) Thread.currentThread()).setHostessState(HostessStates.WAIT_FOR_PASSENGER);
-        repos.setHostessState(((Hostess) Thread.currentThread()).getHostessId(), ((Hostess) Thread.currentThread()).getHostessState());
-        ((Hostess) Thread.currentThread()).setHostessCount(0);
         inP = 0;
         while (inQ == 0)                             // the hostess waits for a passenger to arrive
         {
@@ -131,21 +135,32 @@ public class DepartureAirport implements DepartureAirportInterface {
                 System.exit(1);
             }
         }
+        return HostessStates.WAIT_FOR_PASSENGER;
     }
 
     /**
      * Operation wait in queue.
      * <p>
      * It is called by a passenger while waiting for his turn to show his documents to the hostess.
+     *
+     *     @param passengerId identification of the passenger
+     *     @return true, if the passenger queue at the airport is not empty,
+     *     false, otherwise
+     *     and Hostess state
+     *     @throws RemoteException if either the invocation of the remote method, or the communication with the registry
+     *                             service fails
      */
 
-    public synchronized void waitInQueue() {
-        int passengerId;                                      // passenger id
+    public synchronized int waitInQueue(int passengerId) throws RemoteException {
 
-        passengerId = ((Passenger) Thread.currentThread()).getPassengerId();
-        passengers[passengerId] = (Passenger) Thread.currentThread();
-        passengers[passengerId].setPassengerState(PassengerStates.IN_QUEUE);
-        repos.setPassengerState(passengerId, passengers[passengerId].getPassengerState());
+        try{
+            repos.setPassengerState(passengerId, PassengerStates.IN_QUEUE);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Passenger remote exception on waitInQueue - : setPassengerState" + e.getMessage ());
+            System.exit (1);
+        }
+
         inQ++;                                        // the passenger arrives at the airport,
 
         try {
@@ -157,7 +172,7 @@ public class DepartureAirport implements DepartureAirportInterface {
 
         notifyAll();
 
-        while (!(((Passenger) Thread.currentThread()).getReadyToShowDocuments())) {
+        while (!passengers[passengerId]) {
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -165,7 +180,10 @@ public class DepartureAirport implements DepartureAirportInterface {
                 System.exit(1);
             }
         }
-        ((Passenger) Thread.currentThread()).setReadyToShowDocuments(false);
+
+        passengers[passengerId] = false;
+
+        return PassengerStates.IN_QUEUE;
     }
 
 
@@ -173,16 +191,26 @@ public class DepartureAirport implements DepartureAirportInterface {
      * Operation check documents.
      * <p>
      * It is called by the hostess while waiting for the first costumer in queue to show his documents.
+     *
+     *     @return true, if the passenger queue at the airport is not empty,
+     *     false, otherwise
+     *     and Hostess state
+     *     @throws RemoteException if either the invocation of the remote method, or the communication with the registry
+     *                             service fails
      */
 
-    public synchronized void checkDocuments() {
+    public synchronized ReturnBoolean checkDocuments() throws RemoteException {
         int passengerId;                                        //passenger id
 
-        ((Hostess) Thread.currentThread()).setHostessState(HostessStates.CHECK_PASSENGER);
-        repos.setHostessState(((Hostess) Thread.currentThread()).getHostessId(), ((Hostess) Thread.currentThread()).getHostessState());
+        try{
+            repos.setHostessState(0, HostessStates.CHECK_PASSENGER);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Hostess remote exception on checkDocuments - : setHostessState" + e.getMessage ());
+            System.exit (1);
+        }
 
         inQ--;
-        ((Hostess) Thread.currentThread()).setPassengerInQueue(!queueEmpty());
 
         try {
             passengerId = boardingQueue.read();                            // the hostess calls the customer
@@ -194,7 +222,7 @@ public class DepartureAirport implements DepartureAirportInterface {
             System.exit(1);
         }
 
-        passengers[passengerId].setReadyToShowDocuments(true);
+        passengers[passengerId] = true;
 
         notifyAll();
 
@@ -209,6 +237,7 @@ public class DepartureAirport implements DepartureAirportInterface {
         }
 
         readyToCheckDocuments = false;
+        return new ReturnBoolean((!queueEmpty()), HostessStates.CHECK_PASSENGER);
     }
 
     /**
@@ -217,7 +246,7 @@ public class DepartureAirport implements DepartureAirportInterface {
      * It is called by a passenger if the hostess has called him to check his documents.
      */
 
-    public synchronized void  showDocuments() {
+    public synchronized void  showDocuments() throws RemoteException {
         readyToCheckDocuments = true;
 
         notifyAll();
@@ -237,16 +266,30 @@ public class DepartureAirport implements DepartureAirportInterface {
      * Operation wait for next passenger.
      * <p>
      * It is called by the hostess while waiting for the next passenger in queue.
+     *
+     *     @param HostessCount number of passengers on the plane
+     *     @param CheckedPassengers number of passengers checked by hostess
+     *     @return true, if the passenger queue at the airport is not empty,
+     *     false, otherwise
+     *     and Hostess state
+     *     @throws RemoteException if either the invocation of the remote method, or the communication with the registry
+     *                             service fails
      */
 
-    public synchronized void waitForNextPassenger() {
-        ((Hostess) Thread.currentThread()).setHostessState(HostessStates.WAIT_FOR_PASSENGER);
-        repos.setHostessState(((Hostess) Thread.currentThread()).getHostessId(), ((Hostess) Thread.currentThread()).getHostessState());
-        ((Hostess) Thread.currentThread()).setHostessCount(((Hostess) Thread.currentThread()).getHostessCount()+1);
+    public synchronized ReturnBoolean waitForNextPassenger(int HostessCount, int CheckedPassengers) throws RemoteException {
+
+        try{
+            repos.setHostessState(0, HostessStates.WAIT_FOR_PASSENGER);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Hostess remote exception on waitForNextPassenger - : setHostessState" + e.getMessage ());
+            System.exit (1);
+        }
+
         canBoardThePlane = true;
 
         notifyAll();
-        while ((inQ == 0 && ((Hostess) Thread.currentThread()).getHostessCount() < 5 || (!readyForNextPassenger)) && !((inP + ((Hostess) Thread.currentThread()).getCheckedPassengers()) >= SimulPar.N))    // the hostess waits for a passenger to enter the plane
+        while ((inQ == 0 && (HostessCount+1) < 5 || (!readyForNextPassenger)) && !((inP + CheckedPassengers) >= SimulPar.N))    // the hostess waits for a passenger to enter the plane
         {
             //Plane.getInF()
             try {
@@ -258,21 +301,69 @@ public class DepartureAirport implements DepartureAirportInterface {
         }
 
         readyForNextPassenger = false;
-        ((Hostess) Thread.currentThread()).setPassengerInQueue(!queueEmpty());
+        return new ReturnBoolean((!queueEmpty()), HostessStates.WAIT_FOR_PASSENGER);
     }
 
     /**
      * Operation boarding the plane
      * <p>
      * It is called by the passengers when they are allowed to enter the plane.
+     *
+     *     @param passengerId identification of the passenger
+     *     @return passenger state
+     *     @throws RemoteException if either the invocation of the remote method, or the communication with the registry
+     *                             service fails
      */
 
-    public synchronized void boardThePlane() {
+    public synchronized int boardThePlane(int passengerId) throws RemoteException {
 
         readyForNextPassenger = true;
         inP +=1;
-        ((Passenger) Thread.currentThread()).setPassengerState(PassengerStates.IN_FLIGHT);
-        repos.setPassengerState(((Passenger) Thread.currentThread()).getPassengerId(), ((Passenger) Thread.currentThread()).getPassengerState());
+
+        try{
+            repos.setPassengerState(passengerId, PassengerStates.IN_FLIGHT);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Passenger remote exception on boardThePlane - : setPassengerState" + e.getMessage ());
+            System.exit (1);
+        }
+
         notifyAll();
+        return PassengerStates.IN_FLIGHT;
+    }
+
+    /**
+     *  Operation end of work.
+     *
+     *   End operation.
+     *
+     *      @throws RemoteException if either the invocation of the remote method, or the communication with the registry
+     *                              service fails
+     */
+
+    @Override
+    public synchronized void endOperation () throws RemoteException {
+        while (nEntities == 0)
+            try
+            { wait ();
+            }
+            catch (InterruptedException e) {}
+    }
+
+    /**
+     *   Operation server shutdown.
+     *
+     *   Shutdown operation.
+     *
+     *      @throws RemoteException if either the invocation of the remote method, or the communication with the registry
+     *                              service fails
+     */
+
+    @Override
+    public synchronized void shutdown () throws RemoteException {
+        nEntities += 1;
+        if (nEntities >= SimulPar.E)
+            ServerAirLiftDepartureAirport.shutdown ();
+        notifyAll ();
     }
 }

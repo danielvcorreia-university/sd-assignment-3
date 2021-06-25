@@ -1,8 +1,9 @@
-package sharedRegions;
+package serverSide.objects;
 
 import commInfra.*;
+import clientSide.entities.*;
 import serverSide.main.*;
-import genclass.GenericIO;
+import genclass.*;
 import interfaces.*;
 import java.rmi.*;
 
@@ -19,7 +20,7 @@ import java.util.Objects;
  * There are no internal synchronization points.
  */
 
-public class GeneralRepos {
+public class GeneralRepos implements GeneralReposInterface{
     /**
      * Name of the logging file.
      */
@@ -43,6 +44,13 @@ public class GeneralRepos {
      */
 
     private int pilotState;
+
+
+    /**
+     *   Number of entity groups requesting the shutdown.
+     */
+
+    private int nEntities;
 
     /**
      * Instantiation of a general repository object.
@@ -70,6 +78,7 @@ public class GeneralRepos {
         if ((logFileName == null) || Objects.equals (logFileName, ""))
             this.logFileName = "logger";
         else this.logFileName = logFileName;
+        nEntities = 0;
         queue = new ArrayList<>();
         passengerPerFlight = new int  [(SimulPar.N / SimulPar.MIN)+1];
         passengerState = new int [SimulPar.N+1];
@@ -324,5 +333,23 @@ public class GeneralRepos {
             GenericIO.writelnString("The operation of closing the file " + logFileName + " failed!");
             System.exit(1);
         }
+    }
+
+
+    /**
+     *   Operation server shutdown.
+     *
+     *   Shutdown operation.
+     *
+     *     @throws RemoteException if either the invocation of the remote method, or the communication with the registry
+     *                             service fails
+     */
+
+    @Override
+    public synchronized void shutdown () throws RemoteException
+    {
+        nEntities += 1;
+        if (nEntities >= SimulPar.E)
+            ServerAirLiftGeneralRepos.shutdown ();
     }
 }

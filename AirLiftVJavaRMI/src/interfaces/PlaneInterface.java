@@ -20,7 +20,7 @@ public interface PlaneInterface extends Remote
      *                             service fails
      */
 
-    public ReturnInt getInF () throws RemoteException;
+    public int getInF () throws RemoteException;
 
     /**
      *  Operation to report the final report.
