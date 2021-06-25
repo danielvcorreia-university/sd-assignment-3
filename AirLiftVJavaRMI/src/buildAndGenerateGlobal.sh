@@ -1,5 +1,5 @@
 echo "Compiling source code."
-javac */*.java */*/*.java
+javac -cp genclass.jar */*.java */*/*.java
 echo "Distributing intermediate code to the different execution environments."
 echo "  RMI registry"
 rm -rf dirRMIRegistry/interfaces
@@ -11,6 +11,7 @@ mkdir -p dirRegistry/serverSide dirRegistry/serverSide/main dirRegistry/serverSi
 cp serverSide/main/ServerRegisterRemoteObject.class dirRegistry/serverSide/main
 cp serverSide/objects/RegisterRemoteObject.class dirRegistry/serverSide/objects
 cp interfaces/Register.class dirRegistry/interfaces
+cp genclass.jar dirRegistry
 echo "  General Repository of Information"
 rm -rf dirGeneralRepos/serverSide dirGeneralRepos/clientSide dirGeneralRepos/interfaces
 mkdir -p dirGeneralRepos/serverSide dirGeneralRepos/serverSide/main dirGeneralRepos/serverSide/objects dirGeneralRepos/interfaces \
@@ -19,6 +20,7 @@ cp serverSide/main/SimulPar.class serverSide/main/ServerAirLiftGeneralRepos.clas
 cp serverSide/objects/GeneralRepos.class dirGeneralRepos/serverSide/objects
 cp interfaces/Register.class interfaces/GeneralReposInterface.class dirGeneralRepos/interfaces
 cp clientSide/entities/HostessStates.class clientSide/entities/PassengerStates.class clientSide/entities/PilotStates.class dirGeneralRepos/clientSide/entities
+cp genclass.jar dirGeneralRepos
 echo "  Departure Airport"
 rm -rf dirDepartureAirport/serverSide dirDepartureAirport/clientSide dirDepartureAirport/interfaces dirDepartureAirport/commInfra
 mkdir -p dirDepartureAirport/serverSide dirDepartureAirport/serverSide/main dirDepartureAirport/serverSide/objects dirDepartureAirport/interfaces \
@@ -28,6 +30,7 @@ cp serverSide/objects/DepartureAirport.class dirDepartureAirport/serverSide/obje
 cp interfaces/*.class dirDepartureAirport/interfaces
 cp clientSide/entities/HostessStates.class clientSide/entities/PassengerStates.class clientSide/entities/PilotStates.class dirDepartureAirport/clientSide/entities
 cp commInfra/*.class dirDepartureAirport/commInfra
+cp genclass.jar dirDepartureAirport
 echo "  Plane"
 rm -rf dirPlane/serverSide dirPlane/clientSide dirPlane/interfaces dirPlane/commInfra
 mkdir -p dirPlane/serverSide dirPlane/serverSide/main dirPlane/serverSide/objects dirPlane/interfaces \
@@ -37,6 +40,7 @@ cp serverSide/objects/Plane.class dirPlane/serverSide/objects
 cp interfaces/*.class dirPlane/interfaces
 cp clientSide/entities/HostessStates.class clientSide/entities/PassengerStates.class clientSide/entities/PilotStates.class dirPlane/clientSide/entities
 cp commInfra/*.class dirPlane/commInfra
+cp genclass.jar dirPlane
 echo "  Destination Airport"
 rm -rf dirDestinationAirport/serverSide dirDestinationAirport/clientSide dirDestinationAirport/interfaces dirDestinationAirport/commInfra
 mkdir -p dirDestinationAirport/serverSide dirDestinationAirport/serverSide/main dirDestinationAirport/serverSide/objects dirDestinationAirport/interfaces \
@@ -46,6 +50,7 @@ cp serverSide/objects/DestinationAirport.class dirDestinationAirport/serverSide/
 cp interfaces/*.class dirDestinationAirport/interfaces
 cp clientSide/entities/HostessStates.class clientSide/entities/PassengerStates.class clientSide/entities/PilotStates.class dirDestinationAirport/clientSide/entities
 cp commInfra/*.class dirDestinationAirport/commInfra
+cp genclass.jar dirDestinationAirport
 echo "  Pilot"
 rm -rf dirPilot/serverSide dirPilot/clientSide dirPilot/interfaces
 mkdir -p dirPilot/serverSide dirPilot/serverSide/main dirPilot/clientSide dirPilot/clientSide/main dirPilot/clientSide/entities \
@@ -54,6 +59,7 @@ cp serverSide/main/SimulPar.class dirPilot/serverSide/main
 cp clientSide/main/ClientAirLiftPilot.class clientSide/main/SimulPar.class dirPilot/clientSide/main
 cp clientSide/entities/Pilot.class clientSide/entities/PilotStates.class dirPilot/clientSide/entities
 cp interfaces/PlaneInterface.class interfaces/GeneralReposInterface.class interfaces/ReturnBoolean.class interfaces/ReturnInt.class dirPilot/interfaces
+cp genclass.jar dirPilot
 echo "  Hostess"
 rm -rf dirHostess/serverSide dirHostess/clientSide dirHostess/interfaces
 mkdir -p dirHostess/serverSide dirHostess/serverSide/main dirHostess/clientSide dirHostess/clientSide/main dirHostess/clientSide/entities \
@@ -63,6 +69,7 @@ cp clientSide/main/ClientAirLiftHostess.class dirHostess/clientSide/main
 cp clientSide/entities/Hostess.class clientSide/entities/HostessStates.class dirHostess/clientSide/entities
 cp interfaces/DepartureAirportInterface.class interfaces/PlaneInterface.class interfaces/GeneralReposInterface.class interfaces/ReturnBoolean.class \
          interfaces/ReturnInt.class dirHostess/interfaces
+cp genclass.jar dirHostess
 echo "  Passengers"
 rm -rf dirPassengers/serverSide dirPassengers/clientSide dirPassengers/interfaces
 mkdir -p dirPassengers/serverSide dirPassengers/serverSide/main dirPassengers/clientSide dirPassengers/clientSide/main dirPassengers/clientSide/entities \
@@ -72,6 +79,7 @@ cp clientSide/main/ClientAirLiftPassenger.class dirPassengers/clientSide/main
 cp clientSide/entities/Passenger.class clientSide/entities/PassengerStates.class dirPassengers/clientSide/entities
 cp interfaces/DepartureAirportInterface.class interfaces/PlaneInterface.class interfaces/DestinationAirportInterface.class interfaces/GeneralReposInterface.class \
          interfaces/ReturnBoolean.class interfaces/ReturnInt.class dirPassengers/interfaces
+cp genclass.jar dirPassengers
 echo "Compressing execution environments."
 echo "  RMI registry"
 rm -f  dirRMIRegistry.zip

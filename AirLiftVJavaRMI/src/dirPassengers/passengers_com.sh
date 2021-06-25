@@ -1,0 +1,1 @@
+java -cp .:genclass.jar clientSide.main.ClientAirLiftPassenger
