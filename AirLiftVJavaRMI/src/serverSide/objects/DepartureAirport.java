@@ -289,6 +289,17 @@ public class DepartureAirport implements DepartureAirportInterface {
         canBoardThePlane = true;
 
         notifyAll();
+        boolean b = (HostessCount+1) < 5;
+        System.out.println("(HostessCount+1) < 5: " + b );
+        b = (!readyForNextPassenger);
+        System.out.println("(!readyForNextPassenger)): " + b );
+        b = !((inP + CheckedPassengers) >= SimulPar.N);
+        System.out.println("!((inP + CheckedPassengers) >= SimulPar.N): " + b );
+        System.out.println("inQ: " + inQ );
+        System.out.println("inP: " + inP );
+        System.out.println("CheckedPassengers: " + CheckedPassengers );
+        System.out.println("HostessCount+1: " + HostessCount+1 );
+
         while ((inQ == 0 && (HostessCount+1) < 5 || (!readyForNextPassenger)) && !((inP + CheckedPassengers) >= SimulPar.N))    // the hostess waits for a passenger to enter the plane
         {
             //Plane.getInF()

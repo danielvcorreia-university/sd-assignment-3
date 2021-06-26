@@ -27,7 +27,7 @@ public final class SimulPar
     /**
      * Number of entities.
      */
-    public static final int E = 23;
+    public static final int E = 3;
 
     /**
      *   It can not be instantiated.

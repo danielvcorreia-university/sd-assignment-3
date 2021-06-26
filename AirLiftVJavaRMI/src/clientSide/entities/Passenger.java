@@ -247,7 +247,7 @@ public class Passenger extends Thread {
 
     private void travelToAirport() {
         try {
-            sleep((long) (1 + 400 * Math.random()));
+            sleep((long) (1 + 4000 * Math.random()));
         } catch (InterruptedException e) {
             GenericIO.writelnString("Interruption: " + e.getMessage());
             System.exit(1);

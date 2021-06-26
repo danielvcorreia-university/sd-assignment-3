@@ -33,6 +33,8 @@ public class ClientAirLiftPilot
         /* problem initialization */
 
         Pilot pilot;                                                   // reference to the pilot thread
+        String nameEntryDepartureAirport = "DepartureAirport";         // public name of the departure airport object
+        DepartureAirportInterface depAirport = null;                   // remote reference to the departure airport object
         String nameEntryPlane = "Plane";                               // public name of the plane object
         PlaneInterface plane = null;                                   // remote reference to the plane object
         String nameEntryDestinationAirport = "DestinationAirport";     // public name of the destination airport object
@@ -44,6 +46,20 @@ public class ClientAirLiftPilot
         }
         catch (RemoteException e)
         { GenericIO.writelnString ("RMI registry creation exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
+        }
+
+        try
+        { depAirport = (DepartureAirportInterface) registry.lookup (nameEntryDepartureAirport);
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("DepartureAirport lookup exception: " + e.getMessage ());
+            e.printStackTrace ();
+            System.exit (1);
+        }
+        catch (NotBoundException e)
+        { GenericIO.writelnString ("DepartureAirport not bound exception: " + e.getMessage ());
             e.printStackTrace ();
             System.exit (1);
         }
@@ -92,6 +108,30 @@ public class ClientAirLiftPilot
         GenericIO.writelnString("The pilot " + (1) + " has terminated.");
         GenericIO.writelnString ();
 
+        while (pilot.isAlive ())
+        { try
+            { plane.endOperation ();
+            }
+            catch (RemoteException e)
+            { GenericIO.writelnString ("Pilot generator remote exception on Plane endOperation: " + e.getMessage ());
+            System.exit (1);
+            }
+            try
+            { desAirport.endOperation ();
+            }
+            catch (RemoteException e)
+            { GenericIO.writelnString ("Pilot generator remote exception on DestinationAirport endOperation: " + e.getMessage ());
+                System.exit (1);
+            }
+            Thread.yield ();
+        }
+        try
+        { depAirport.shutdown ();
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Pilot generator remote exception on DepartureAirport shutdown: " + e.getMessage ());
+            System.exit (1);
+        }
         try
         { plane.shutdown ();
         }

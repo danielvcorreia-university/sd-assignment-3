@@ -107,7 +107,16 @@ public class ClientAirLiftHostess
         catch (InterruptedException e) {}
         GenericIO.writelnString("The hostess " + (1) + " has terminated.");
         GenericIO.writelnString ();
-
+        while (hostess.isAlive ())
+        { try
+            { depAirport.endOperation ();
+            }
+            catch (RemoteException e)
+            { GenericIO.writelnString ("Hostess generator remote exception on DepartureAirport endOperation: " + e.getMessage ());
+                System.exit (1);
+            }
+            Thread.yield ();
+        }
         try
         { depAirport.shutdown ();
         }
