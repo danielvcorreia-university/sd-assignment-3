@@ -58,7 +58,7 @@ mkdir -p dirPilot/serverSide dirPilot/serverSide/main dirPilot/clientSide dirPil
 cp serverSide/main/SimulPar.class dirPilot/serverSide/main
 cp clientSide/main/ClientAirLiftPilot.class clientSide/main/SimulPar.class dirPilot/clientSide/main
 cp clientSide/entities/Pilot.class clientSide/entities/PilotStates.class dirPilot/clientSide/entities
-cp interfaces/PlaneInterface.class interfaces/GeneralReposInterface.class interfaces/ReturnBoolean.class interfaces/ReturnInt.class dirPilot/interfaces
+cp interfaces/*.class dirPilot/interfaces
 cp genclass.jar dirPilot
 echo "  Hostess"
 rm -rf dirHostess/serverSide dirHostess/clientSide dirHostess/interfaces
@@ -67,8 +67,7 @@ mkdir -p dirHostess/serverSide dirHostess/serverSide/main dirHostess/clientSide 
 cp serverSide/main/SimulPar.class dirHostess/serverSide/main
 cp clientSide/main/ClientAirLiftHostess.class dirHostess/clientSide/main
 cp clientSide/entities/Hostess.class clientSide/entities/HostessStates.class dirHostess/clientSide/entities
-cp interfaces/DepartureAirportInterface.class interfaces/PlaneInterface.class interfaces/GeneralReposInterface.class interfaces/ReturnBoolean.class \
-         interfaces/ReturnInt.class dirHostess/interfaces
+cp interfaces/*.class dirHostess/interfaces
 cp genclass.jar dirHostess
 echo "  Passengers"
 rm -rf dirPassengers/serverSide dirPassengers/clientSide dirPassengers/interfaces
@@ -77,8 +76,7 @@ mkdir -p dirPassengers/serverSide dirPassengers/serverSide/main dirPassengers/cl
 cp serverSide/main/SimulPar.class dirPassengers/serverSide/main
 cp clientSide/main/ClientAirLiftPassenger.class dirPassengers/clientSide/main
 cp clientSide/entities/Passenger.class clientSide/entities/PassengerStates.class dirPassengers/clientSide/entities
-cp interfaces/DepartureAirportInterface.class interfaces/PlaneInterface.class interfaces/DestinationAirportInterface.class interfaces/GeneralReposInterface.class \
-         interfaces/ReturnBoolean.class interfaces/ReturnInt.class dirPassengers/interfaces
+cp interfaces/*.class dirPassengers/interfaces
 cp genclass.jar dirPassengers
 echo "Compressing execution environments."
 echo "  RMI registry"
