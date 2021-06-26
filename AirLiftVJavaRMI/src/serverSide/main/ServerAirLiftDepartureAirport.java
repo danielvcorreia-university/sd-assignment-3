@@ -171,6 +171,13 @@ public class ServerAirLiftDepartureAirport
             e.printStackTrace ();
             System.exit (1);
         }
+        try
+        { reposStub.shutdown ();
+        }
+        catch (RemoteException e)
+        { GenericIO.writelnString ("Departure Airport generator remote exception on DepartureAirport shutdown: " + e.getMessage ());
+            System.exit (1);
+        }
 
         if (shutdownDone)
             GenericIO.writelnString ("Departure Airport was shutdown!");
