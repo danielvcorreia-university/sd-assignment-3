@@ -301,8 +301,6 @@ public class DepartureAirport implements DepartureAirportInterface {
         System.out.print("");
         System.out.print("");
 
-        //for(int i = 0; i < 10; i++) { System.out.print(""); }
-
         while ((inQ == 0 && (HostessCount+1) < 5 || (!readyForNextPassenger)) && !((inP + CheckedPassengers) >= SimulPar.N))    // the hostess waits for a passenger to enter the plane
         {
             try {
