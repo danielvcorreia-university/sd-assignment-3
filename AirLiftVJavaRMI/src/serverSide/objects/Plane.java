@@ -175,7 +175,7 @@ public class Plane implements PlaneInterface{
         }
         nextFlight = false;
 
-        return new ReturnInt(CheckedPassengers+inF, HostessStates.WAIT_FOR_FLIGHT);
+        return new ReturnInt((CheckedPassengers+inF), HostessStates.WAIT_FOR_FLIGHT);
     }
 
     /**
@@ -246,7 +246,7 @@ public class Plane implements PlaneInterface{
      * It is called by the passengers when they are inside the plane and begin their waiting journey.
      */
 
-    public synchronized void waitForEndOfFlight() {
+        public synchronized void waitForEndOfFlight() throws RemoteException {
 
         inF += 1;
 
