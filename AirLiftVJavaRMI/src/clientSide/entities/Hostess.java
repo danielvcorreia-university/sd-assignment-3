@@ -263,6 +263,13 @@ public class Hostess extends Thread {
     {
         ReturnInt ret = null;
 
+        /*try {
+            sleep(200);
+        } catch (InterruptedException e) {
+            GenericIO.writelnString("Interruption: " + e.getMessage());
+            System.exit(1);
+        }*/
+
         try
         { ret = plane.waitForNextFlight (first, getCheckedPassengers());
         }

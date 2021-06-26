@@ -153,6 +153,7 @@ public class Plane implements PlaneInterface{
      */
 
     public synchronized ReturnInt waitForNextFlight(boolean first, int CheckedPassengers) throws RemoteException {
+        int temp;
         if(!first) {
             try{
                 repos.setHostessState(0, HostessStates.WAIT_FOR_FLIGHT);
@@ -162,6 +163,8 @@ public class Plane implements PlaneInterface{
                 System.exit (1);
             }
         }
+        temp = inF;
+
         if (!(CheckedPassengers + inF == SimulPar.N)) {
             while(!nextFlight)
             {
@@ -175,7 +178,7 @@ public class Plane implements PlaneInterface{
         }
         nextFlight = false;
 
-        return new ReturnInt((CheckedPassengers+inF), HostessStates.WAIT_FOR_FLIGHT);
+        return new ReturnInt(CheckedPassengers + temp, HostessStates.WAIT_FOR_FLIGHT);
     }
 
     /**
@@ -271,7 +274,7 @@ public class Plane implements PlaneInterface{
      */
 
     public synchronized ReturnInt announceArrival(int TransportedPassengers) throws RemoteException {
-
+        int temp;
         try{
             repos.setPilotState(PilotStates.DEBOARDING);
         }
@@ -280,6 +283,7 @@ public class Plane implements PlaneInterface{
             System.exit (1);
         }
 
+        temp = inF;
         startDeboarding = true;
 
         notifyAll();
@@ -303,7 +307,7 @@ public class Plane implements PlaneInterface{
             System.exit (1);
         }
 
-        return new ReturnInt(TransportedPassengers+inF, PilotStates.FLYING_BACK);
+        return new ReturnInt(TransportedPassengers+temp, PilotStates.FLYING_BACK);
     }
 
     /**
