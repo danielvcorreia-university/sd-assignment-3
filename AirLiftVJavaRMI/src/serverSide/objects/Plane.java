@@ -31,7 +31,7 @@ public class Plane implements PlaneInterface{
      * Reference to number of passengers in the plane.
      */
 
-    private static int inF;
+    private static volatile int inF;
 
     /**
      * True if the pilot communicated to the hostess that the plane is ready for boarding.
