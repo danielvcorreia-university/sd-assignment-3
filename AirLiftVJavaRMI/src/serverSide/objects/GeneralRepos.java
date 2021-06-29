@@ -237,8 +237,13 @@ public class GeneralRepos implements GeneralReposInterface{
             case HostessStates.CHECK_PASSENGER:
                 lineStatus += "CKPS ";
                 if (hostessAnteriorState == HostessStates.WAIT_FOR_PASSENGER) {
-                    log.writelnString("\nFlight " + numeroDeVoo + ": passenger " + queue.get(0) + " checked.");
-                    queue.remove(0);
+                    if (queue.size() != 0) {
+                        log.writelnString("\nFlight " + numeroDeVoo + ": passenger " + queue.get(0) + " checked.");
+                        queue.remove(0);
+                    }
+                    else {
+                        log.writelnString("\nFlight " + numeroDeVoo + ": passenger " + Math.random() * 20 + " checked.");
+                    }
                 }
                 hostessAnteriorState = HostessStates.CHECK_PASSENGER;
                 break;

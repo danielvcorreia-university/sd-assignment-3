@@ -163,7 +163,7 @@ public class Plane implements PlaneInterface{
                 System.exit (1);
             }
         }
-        for(int i = 0; i < 40; i++) { System.out.print(""); }
+        //for(int i = 0; i < 40; i++) { System.out.print(""); }
         temp = inF;
 
         if (!(CheckedPassengers + inF == SimulPar.N)) {

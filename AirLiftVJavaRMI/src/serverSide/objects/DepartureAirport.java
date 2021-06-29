@@ -36,6 +36,12 @@ public class DepartureAirport implements DepartureAirportInterface {
     private int inP;
 
     /**
+     * Number of passengers waiting in the plane.
+     */
+
+    private int checked;
+
+    /**
      * True for the passengers that have reached their turn to check in.
      */
 
@@ -85,6 +91,7 @@ public class DepartureAirport implements DepartureAirportInterface {
      */
 
     public DepartureAirport(GeneralReposInterface repos) {
+        checked = 0;
         passengers = new boolean[SimulPar.N];
         readyForNextPassenger = false;
         for (int i = 0; i < SimulPar.N; i++)
@@ -289,12 +296,12 @@ public class DepartureAirport implements DepartureAirportInterface {
         canBoardThePlane = true;
 
         notifyAll();
-        boolean b = (HostessCount+1) < 5;
-        b = (!readyForNextPassenger);
-        b = !((inP + CheckedPassengers) >= SimulPar.N);
-        for(int i = 0; i < 30; i++) { System.out.print(""); }
+        //boolean b = (HostessCount+1) < 5;
+        //b = (!readyForNextPassenger);
+        //b = !((inP + CheckedPassengers) >= SimulPar.N);
+        //for(int i = 0; i < 30; i++) { System.out.print(""); }
 
-        while ((inQ == 0 && (HostessCount+1) < 5 || (!readyForNextPassenger)) && !((inP + CheckedPassengers) >= SimulPar.N))    // the hostess waits for a passenger to enter the plane
+        while ((inQ == 0 && (HostessCount+1) < 5 || (!readyForNextPassenger)) && !((checked) >= SimulPar.N))    // the hostess waits for a passenger to enter the plane
         {
             try {
                 wait();
@@ -322,6 +329,7 @@ public class DepartureAirport implements DepartureAirportInterface {
     public synchronized int boardThePlane(int passengerId) throws RemoteException {
 
         readyForNextPassenger = true;
+        checked += 1;
         inP +=1;
 
         try{
